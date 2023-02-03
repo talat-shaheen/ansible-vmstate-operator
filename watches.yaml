@@ -1,0 +1,19 @@
+---
+# Use the 'create api' subcommand to add watches to this file.
+- version: v1
+  group: aws.xyzcompany.com
+  kind: AWSEC2
+  playbook: playbooks/awsec2.yml
+  vars:
+    ec2_command: "create"
+  finalizer:
+    name: aws.xyzcompany.com/finalizer
+    role: awsec2
+    vars:
+      ec2_command: "delete"
+    
+- version: v1
+  group: aws.xyzcompany.com
+  kind: AWSManager
+  playbook: playbooks/awsmanager.yml
+#+kubebuilder:scaffold:watch

@@ -1,0 +1,15 @@
+apiVersion: aws.xyzcompany.com/v1
+kind: AWSEC2
+metadata:
+  labels:
+    app.kubernetes.io/name: awsec2
+    app.kubernetes.io/instance: awsec2-talat
+    app.kubernetes.io/part-of: ansible-vmstate-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: ansible-vmstate-operator
+  name: awsec2-talat
+  namespace: ansible-vmstate-operator-system
+spec:
+  # TODO(user): Add fields here
+  image: quay.io/talat_shaheen0/aws-vmcreate:latest
+  

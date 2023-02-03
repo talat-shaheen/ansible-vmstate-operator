@@ -1,0 +1,13 @@
+---
+# vars file for AWSEC2
+# K8S vars
+operator_api_version: "aws.xyzcompany.com/v1"
+operator_kind: "AWSEC2"
+
+# vars file for AWSEC2
+aws_cred_secret_check_msg: "Checking if AWS credential secret aws-secret is present in namespace {{ansible_operator_meta.namespace}}"
+aws_cred_secret_not_present_msg: "AWS credential secret aws-secret is not present in namespace {{ansible_operator_meta.namespace}}"
+aws_cred_secret_present_msg: "AWS credential secret aws-secret is present in namespace {{ansible_operator_meta.namespace}}"
+creating_job_msg: "Creating job {{ansible_operator_meta.name}} in namespace {{ansible_operator_meta.namespace}}"
+create_job_success_msg: "Successfully created job {{ansible_operator_meta.name}} in namespace {{ansible_operator_meta.namespace}}"
+create_job_failure_msg: "Failure while creating job {{ansible_operator_meta.name}} in namespace {{ansible_operator_meta.namespace}}"

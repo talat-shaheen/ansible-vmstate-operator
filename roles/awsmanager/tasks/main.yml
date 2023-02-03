@@ -1,0 +1,89 @@
+---
+# tasks file for AWSManager
+# Set operator status
+- name: Update operator status 1
+  include_tasks: update-operator-status.yaml
+  vars:
+    reasontext: CheckIfAWSCredSecretPresent
+    messagetext: "{{aws_cred_secret_check_msg}}"
+
+# Get the aws cred secret
+- name: Get secret
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    namespace: "{{ansible_operator_meta.namespace}}"
+    name: aws-secret
+  register: var_secret
+
+- name: Extract secret name
+  set_fact:
+    secret: "{{ var_secret | json_query('resources[0].metadata.name')  }}"
+
+- name: Print secret name
+  debug:
+    msg: "AWS credentials are present in secret {{secret}}"
+
+# Update operator status if aws cred secret is not present
+- block:
+
+  - name: Update operator status 2
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CheckIfAWSCredSecretPresent
+      messagetext: "{{aws_cred_secret_not_present_msg}}"
+
+  - name: Fail task if aws cred secret is not present
+    fail:
+      msg: "{{aws_cred_secret_not_present_msg}}"
+
+  when: secret != "aws-secret"
+
+# Create deployment if secret is present
+- block:
+
+  - name: Update operator status 3
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CheckIfAWSCredSecretPresent
+      messagetext: "{{aws_cred_secret_present_msg}}"
+
+  - name: Update operator status 4 
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: Creatingdeployment
+      messagetext: "{{creating_deployment_msg}}"
+
+  - name: Create deployment
+    kubernetes.core.k8s:
+      definition: "{{ lookup('template', item) | from_yaml  }}"
+    with_items:
+      - awsmanager.yaml
+
+  - name: Get deployment
+    k8s_info:
+      api_version: apps/v1
+      kind: Deployment
+      namespace: "{{ansible_operator_meta.namespace}}"
+      name: "{{ansible_operator_meta.name}}"
+    register: var_deployment
+
+  - name: Extract deployment name
+    set_fact:
+      deployment_name: "{{ var_deployment | json_query('resources[0].metadata.name')  }}"
+
+  - name: Update operator status 5
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CreatedeploymentSuccess
+      messagetext: "{{create_deployment_success_msg}}"
+    when: deployment_name == ansible_operator_meta.name 
+
+  - name: Update operator status 6
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CreatedeploymentFailure
+      messagetext: "{{create_deployment_failure_msg}}"
+    when: deployment_name != ansible_operator_meta.name 
+
+  when: secret == "aws-secret"

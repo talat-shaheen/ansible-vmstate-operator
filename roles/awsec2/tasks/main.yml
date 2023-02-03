@@ -1,0 +1,125 @@
+---
+# tasks file for AWSEC2
+# Set operator status
+- name: Update operator status1
+  include_tasks: update-operator-status.yaml
+  vars:
+    reasontext: CheckIfAWSCredSecretPresent
+    messagetext: "{{aws_cred_secret_check_msg}}"
+
+# Get the aws cred secret
+- name: Get secret
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    namespace: "{{ansible_operator_meta.namespace}}"
+    name: aws-secret
+  register: var_secret
+
+- name: Extract secret name
+  set_fact:
+    secret: "{{ var_secret | json_query('resources[0].metadata.name')  }}"
+
+- name: Print secret name
+  debug:
+    msg: "AWS credentials are present in secret {{secret}}"
+
+# - name: Print state value
+#   debug:
+#     msg: "ec2_command value is  {{state}}"
+
+# - name: Print ec2_command value
+#   debug:
+#     msg: "ec2_command value is  {{ec2_command}}"
+
+# Update operator status if aws cred secret is not present
+- block:
+
+  - name: Update operator status2
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CheckIfAWSCredSecretPresent
+      messagetext: "{{aws_cred_secret_not_present_msg}}"
+
+  - name: Fail task if aws cred secret is not present
+    fail:
+      msg: "{{aws_cred_secret_not_present_msg}}"
+
+  when: secret != "aws-secret"
+
+# set the value of ec2_command
+
+- name: Print ec2_command value
+  debug:
+    msg: "ec2_command value is  {{ec2_command}}"
+# - name: Print state value
+#   debug:
+#     msg: "state value is  {{state}}"
+    
+# - block:
+#   - name: set the value of ec2_command
+#     set_fact:
+#       ec2_command: "create"
+#   - name: Print ec2_command value
+#     debug:
+#       msg: "ec2_command value is  {{ec2_command}}"
+#   when: "{{state}}" != "absent"
+
+# # set the value of ec2_command
+# - block:
+#   - name: set the value of ec2_command
+#     set_fact:
+#       ec2_command: "delete"
+#   - name: Print ec2_command value
+#     debug:
+#       msg: "ec2_command value is  {{ec2_command}}"
+#   when: "{{state}}" == "absent"
+
+# Create job if secret is present
+- block:
+
+  - name: Update operator status3
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: CheckIfAWSCredSecretPresent
+      messagetext: "{{aws_cred_secret_present_msg}}"
+
+  - name: Update operator status4
+    include_tasks: update-operator-status.yaml
+    vars:
+      reasontext: Creatingjob
+      messagetext: "{{creating_job_msg}}"
+  
+  - name: Create job
+    kubernetes.core.k8s:
+      definition: "{{ lookup('template', item) | from_yaml  }}"
+    with_items:
+      - job.yaml.j2
+
+  - name: Get job
+    k8s_info:
+      api_version: batch/v1
+      kind: Job
+      namespace: "{{ansible_operator_meta.namespace}}"
+      name: "{{ansible_operator_meta.name + '-' + ec2_command}}"
+    register: var_job
+
+  - name: Extract job name
+    set_fact:
+      job_name: "{{ var_job | json_query('resources[0].metadata.name')  }}"
+
+  # - name: Update operator status5
+  #   include_tasks: update-operator-status.yaml
+  #   vars:
+  #     reasontext: CreatejobSuccess
+  #     messagetext: "{{create_job_success_msg}}"
+  #   when: job_name == ansible_operator_meta.name 
+
+  # - name: Update operator status6
+  #   include_tasks: update-operator-status.yaml
+  #   vars:
+  #     reasontext: CreatejobFailure
+  #     messagetext: "{{create_job_failure_msg}}"
+  #   when: job_name != ansible_operator_meta.name 
+
+  when: secret == "aws-secret"

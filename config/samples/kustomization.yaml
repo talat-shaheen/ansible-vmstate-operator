@@ -1,0 +1,5 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- aws_v1_awsec2.yaml
+- aws_v1_awsmanager.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

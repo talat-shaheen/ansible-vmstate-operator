@@ -1,0 +1,13 @@
+apiVersion: aws.xyzcompany.com/v1
+kind: AWSManager
+metadata:
+  labels:
+    app.kubernetes.io/name: awsmanager
+    app.kubernetes.io/instance: awsmanager-sample
+    app.kubernetes.io/part-of: ansible-vmstate-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: ansible-vmstate-operator
+  name: awsmanager-sample
+spec:
+  # TODO(user): Add fields here
+  image: quay.io/talat_shaheen0/aws-vmstate:latest

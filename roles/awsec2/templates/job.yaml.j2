@@ -1,0 +1,37 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:   
+  name: '{{ ansible_operator_meta.name + '-' + ec2_command }}'
+  namespace: '{{ ansible_operator_meta.namespace }}'      
+spec:  
+  template:
+    metadata:      
+      labels:        
+        job-name: '{{ ansible_operator_meta.name + '-' + ec2_command }}'
+    spec:
+      containers:
+      - env:
+        - name: ec2_command
+          value: '{{ ec2_command }}'        
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: aws-access-key-id
+              name: aws-secret
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: aws-secret-access-key
+              name: aws-secret
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            secretKeyRef:
+              key: aws-default-region
+              name: aws-secret
+        image: '{{ image }}'        
+        name: '{{ ansible_operator_meta.name + '-' + ec2_command }}'  
+        imagePullPolicy: IfNotPresent
+      restartPolicy: OnFailure      
+      
+      

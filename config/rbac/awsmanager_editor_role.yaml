@@ -1,0 +1,31 @@
+# permissions for end users to edit awsmanagers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: awsmanager-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: ansible-vmstate-operator
+    app.kubernetes.io/part-of: ansible-vmstate-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: awsmanager-editor-role
+rules:
+- apiGroups:
+  - aws.xyzcompany.com
+  resources:
+  - awsmanagers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - aws.xyzcompany.com
+  resources:
+  - awsmanagers/status
+  verbs:
+  - get
