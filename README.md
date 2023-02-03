@@ -1,4 +1,5 @@
 # ansible-vmstate-operator
+```
 cd gittest/
 git clone git@github.com:talat-shaheen/ansible-vmstate-operator.git
 ls
@@ -14,3 +15,4 @@ kubectl apply -f config/samples/aws_v1_awsmanager.yaml -n ansible-vmstate-operat
 kubectl apply -f config/samples/aws_v1_awsec2.yaml -n ansible-vmstate-operator-system
 kubectl patch crd  awsec2s.aws.xyzcompany.com -p '{"metadata":{"finalizers":[]}}' --type=merge
 make undeploy
+```
